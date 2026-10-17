@@ -28,6 +28,8 @@ class RecorderService : Service() {
         const val AKSI_JEDA = "jeda"
         const val AKSI_LANJUT = "lanjut"
         const val AKSI_STOP = "stop"
+        const val AKSI_SEMBUNYI = "sembunyi"
+        const val AKSI_TAMPIL = "tampil"
         const val EXTRA_KODE = "kode"
         const val EXTRA_DATA = "data"
 
@@ -37,6 +39,12 @@ class RecorderService : Service() {
         @Volatile var berjalan = false
         @Volatile var dijeda = false
         @Volatile var durasiMs = 0L
+
+        /** Pengaturan mengizinkan kontrol mengambang pada rekaman ini. */
+        @Volatile var mengambangDipakai = false
+
+        /** Kontrol mengambang sedang terlihat sekarang. */
+        @Volatile var mengambangTampil = false
 
         fun mulai(ctx: Context, kode: Int, data: Intent) {
             val i = Intent(ctx, RecorderService::class.java).apply {
@@ -98,6 +106,15 @@ class RecorderService : Service() {
                 perbaruiNotif()
             }
             AKSI_STOP -> hentikan()
+            AKSI_SEMBUNYI -> {
+                overlay?.sembunyikan()
+                mengambangTampil = false
+            }
+            AKSI_TAMPIL -> {
+                overlay?.tampilkan()
+                overlay?.perbarui(durasiMs, dijeda)
+                mengambangTampil = overlay?.sedangTampil() ?: false
+            }
         }
         return START_NOT_STICKY
     }
@@ -133,11 +150,19 @@ class RecorderService : Service() {
         dijeda = false
         durasiMs = 0L
 
-        overlay = OverlayControl(this, onJeda = {
-            if (engine?.dijeda == true) kirim(this, AKSI_LANJUT) else kirim(this, AKSI_JEDA)
-        }, onStop = {
-            kirim(this, AKSI_STOP)
-        }).also { it.tampilkan() }
+        mengambangDipakai = profil.mengambang
+        mengambangTampil = false
+        if (profil.mengambang) {
+            overlay = OverlayControl(
+                this,
+                onJeda = {
+                    if (engine?.dijeda == true) kirim(this, AKSI_LANJUT) else kirim(this, AKSI_JEDA)
+                },
+                onStop = { kirim(this, AKSI_STOP) },
+                onSembunyi = { kirim(this, AKSI_SEMBUNYI) }
+            ).also { it.tampilkan() }
+            mengambangTampil = overlay?.sedangTampil() ?: false
+        }
 
         handler.postDelayed(detak, 1000)
     }
@@ -147,48 +172,62 @@ class RecorderService : Service() {
             stopSelf()
             return
         }
+        // Tandai berhenti dan bersihkan tampilan dulu, supaya layar langsung
+        // merespons. Penutupan encoder dan muxer makan waktu sampai beberapa
+        // detik, jadi tidak boleh dikerjakan di thread utama.
         berjalan = false
         handler.removeCallbacks(detak)
 
         val e = engine
         engine = null
-        var durasi = 0L
-        if (e != null) {
-            durasi = try { e.hentikan() } catch (_: Exception) { 0L }
-            if (durasi >= 1000) {
-                Riwayat.tambah(
-                    this,
-                    Rekaman(
-                        id = System.currentTimeMillis().toString(),
-                        uri = e.uriKeluaran?.toString() ?: "",
-                        nama = e.namaFile,
-                        durasiMs = durasi,
-                        ukuranBytes = e.ukuranFile(),
-                        tinggi = profil.tinggi,
-                        fps = profil.fps,
-                        kualitas = profil.kualitas,
-                        audio = profil.audio,
-                        jeda = e.jumlahJeda
-                    )
-                )
-            }
-        }
+        val profilIni = profil
 
         try { projection?.unregisterCallback(callbackProjection) } catch (_: Exception) {}
-        try { projection?.stop() } catch (_: Exception) {}
-        projection = null
-
         overlay?.sembunyikan()
         overlay = null
         dijeda = false
-        durasiMs = 0L
+        mengambangTampil = false
+        mengambangDipakai = false
 
-        if (durasi in 1..999) {
-            Toast.makeText(this, "Rekaman terlalu pendek, tidak disimpan.", Toast.LENGTH_SHORT).show()
-        }
+        Thread({
+            var durasi = 0L
+            if (e != null) {
+                durasi = try { e.hentikan() } catch (_: Exception) { 0L }
+                if (durasi >= 1000) {
+                    try {
+                        Riwayat.tambah(
+                            this,
+                            Rekaman(
+                                id = System.currentTimeMillis().toString(),
+                                uri = e.uriKeluaran?.toString() ?: "",
+                                nama = e.namaFile,
+                                durasiMs = durasi,
+                                ukuranBytes = e.ukuranFile(),
+                                tinggi = profilIni.tinggi,
+                                fps = profilIni.fps,
+                                kualitas = profilIni.kualitas,
+                                audio = profilIni.audio,
+                                jeda = e.jumlahJeda
+                            )
+                        )
+                    } catch (_: Exception) {
+                    }
+                }
+            }
+            try { projection?.stop() } catch (_: Exception) {}
 
-        stopForeground(STOP_FOREGROUND_REMOVE)
-        stopSelf()
+            handler.post {
+                projection = null
+                durasiMs = 0L
+                if (durasi in 1..999) {
+                    Toast.makeText(
+                        this, "Rekaman terlalu pendek, tidak disimpan.", Toast.LENGTH_SHORT
+                    ).show()
+                }
+                stopForeground(STOP_FOREGROUND_REMOVE)
+                stopSelf()
+            }
+        }, "rl-tutup").start()
     }
 
     private fun gagal(alasan: String) {
@@ -234,11 +273,26 @@ class RecorderService : Service() {
             .setContentIntent(buka)
 
         if (dijeda) {
-            b.addAction(Notification.Action.Builder(null as Icon?, "Lanjutkan", aksiNotif(AKSI_LANJUT)).build())
+            b.addAction(
+                Notification.Action.Builder(
+                    Icon.createWithResource(this, R.drawable.ic_play), "Lanjutkan",
+                    aksiNotif(AKSI_LANJUT)
+                ).build()
+            )
         } else {
-            b.addAction(Notification.Action.Builder(null as Icon?, "Jeda", aksiNotif(AKSI_JEDA)).build())
+            b.addAction(
+                Notification.Action.Builder(
+                    Icon.createWithResource(this, R.drawable.ic_pause), "Jeda",
+                    aksiNotif(AKSI_JEDA)
+                ).build()
+            )
         }
-        b.addAction(Notification.Action.Builder(null as Icon?, "Berhenti", aksiNotif(AKSI_STOP)).build())
+        b.addAction(
+            Notification.Action.Builder(
+                Icon.createWithResource(this, R.drawable.ic_stop), "Berhenti",
+                aksiNotif(AKSI_STOP)
+            ).build()
+        )
         return b.build()
     }
 

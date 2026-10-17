@@ -15,6 +15,7 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.LinearLayout
+import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -35,6 +36,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var timer: TextView
     private lateinit var bidikKet: TextView
     private lateinit var tombolRekam: TextView
+    private lateinit var tombolJeda: TextView
+    private lateinit var tombolSembunyi: TextView
     private lateinit var meter: View
     private lateinit var meterIsi: View
     private lateinit var meterKiri: TextView
@@ -84,6 +87,8 @@ class MainActivity : AppCompatActivity() {
         timer = findViewById(R.id.timer)
         bidikKet = findViewById(R.id.bidikKet)
         tombolRekam = findViewById(R.id.tombolRekam)
+        tombolJeda = findViewById(R.id.tombolJeda)
+        tombolSembunyi = findViewById(R.id.tombolSembunyi)
         meter = findViewById(R.id.meter)
         meterIsi = findViewById(R.id.meterIsi)
         meterKiri = findViewById(R.id.meterKiri)
@@ -98,7 +103,25 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<View>(R.id.chips).setOnClickListener { bukaLembar() }
         findViewById<View>(R.id.hapusSemua).setOnClickListener { konfirmasiKosongkan() }
-        tombolRekam.setOnClickListener { tekanRekam() }
+        tombolRekam.setOnClickListener {
+            if (RecorderService.berjalan) RecorderService.kirim(this, RecorderService.AKSI_STOP)
+            else tekanRekam()
+        }
+        tombolJeda.setOnClickListener {
+            if (!RecorderService.berjalan) return@setOnClickListener
+            RecorderService.kirim(
+                this,
+                if (RecorderService.dijeda) RecorderService.AKSI_LANJUT else RecorderService.AKSI_JEDA
+            )
+        }
+        tombolSembunyi.setOnClickListener {
+            if (!RecorderService.berjalan) return@setOnClickListener
+            RecorderService.kirim(
+                this,
+                if (RecorderService.mengambangTampil) RecorderService.AKSI_SEMBUNYI
+                else RecorderService.AKSI_TAMPIL
+            )
+        }
 
         gambarProfil()
         gambarRiwayat()
@@ -126,6 +149,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.chipRes).text = profil.labelRes
         findViewById<TextView>(R.id.chipFps).text = "${profil.fps} fps"
         findViewById<TextView>(R.id.chipQ).text = profil.labelKualitas
+        findViewById<TextView>(R.id.chipBit).text = "${bitVideo / 1_000_000} Mbps"
         findViewById<TextView>(R.id.chipA).text = profil.labelAudio
 
         meterKiri.text = Format.mbps(bitVideo)
@@ -169,10 +193,29 @@ class MainActivity : AppCompatActivity() {
                 else -> R.drawable.bg_bulat_merah
             }
         )
-        tombolRekam.visibility = if (jalan) View.GONE else View.VISIBLE
+        if (jalan) {
+            tombolRekam.text = getString(R.string.berhenti)
+            tombolJeda.visibility = View.VISIBLE
+            tombolJeda.text = getString(
+                if (jeda) R.string.lanjut_singkat else R.string.jeda_singkat
+            )
+            tombolSembunyi.visibility =
+                if (RecorderService.mengambangDipakai) View.VISIBLE else View.GONE
+            tombolSembunyi.text = getString(
+                if (RecorderService.mengambangTampil) R.string.sembunyikan else R.string.tampilkan
+            )
+        } else {
+            tombolRekam.text = getString(R.string.mulai_rekam)
+            tombolJeda.visibility = View.GONE
+            tombolSembunyi.visibility = View.GONE
+        }
+
         bidikKet.text = when {
-            jalan && jeda -> "Dijeda — lanjutkan dari kontrol mengambang."
-            jalan -> "Kontrol mengambang aktif. Geser ke mana saja."
+            jalan && jeda -> "Dijeda. Lanjutkan dari sini atau dari kontrol mengambang."
+            jalan && RecorderService.mengambangTampil ->
+                "Geser pil mengambang ke mana saja. Tekan lama untuk menyembunyikannya."
+            jalan && RecorderService.mengambangDipakai -> "Kontrol mengambang disembunyikan."
+            jalan -> "Kontrol mengambang dimatikan di pengaturan."
             else -> "Pengaturan tersimpan. Tinggal pencet rekam."
         }
     }
@@ -201,6 +244,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun lanjutKeTangkapLayar() {
+        if (!profil.mengambang) {
+            // kontrol mengambang dimatikan di pengaturan, izin overlay tidak perlu
+            mintaProyeksi()
+            return
+        }
         if (!Settings.canDrawOverlays(this)) {
             AlertDialog.Builder(this)
                 .setTitle("Izin kontrol mengambang")
@@ -291,6 +339,12 @@ class MainActivity : AppCompatActivity() {
         val grupRes = v.findViewById<LinearLayout>(R.id.grupRes)
         val grupQ = v.findViewById<LinearLayout>(R.id.grupQ)
         val grupAudio = v.findViewById<LinearLayout>(R.id.grupAudio)
+        val grupMengambang = v.findViewById<LinearLayout>(R.id.grupMengambang)
+        val grupBit = v.findViewById<LinearLayout>(R.id.grupBit)
+        val geserBit = v.findViewById<View>(R.id.geserBit)
+        val seekBit = v.findViewById<SeekBar>(R.id.seekBit)
+        val bitNilai = v.findViewById<TextView>(R.id.bitNilai)
+        val bitSaran = v.findViewById<TextView>(R.id.bitSaran)
         val estBit = v.findViewById<TextView>(R.id.estBit)
         val estMenit = v.findViewById<TextView>(R.id.estMenit)
         val estCodec = v.findViewById<TextView>(R.id.estCodec)
@@ -309,13 +363,60 @@ class MainActivity : AppCompatActivity() {
             pasangGrup(grupAudio, profil.audio, mati, "audio") { nilai ->
                 profil = profil.copy(audio = nilai); true
             }
+            pasangGrup(
+                grupMengambang, if (profil.mengambang) "ya" else "tidak", mati, "float"
+            ) { nilai ->
+                profil = profil.copy(mengambang = nilai == "ya"); true
+            }
+
+            pasangGrup(
+                grupBit, if (profil.bitManual) "manual" else "auto", mati, "bit"
+            ) { nilai ->
+                val ukuran = Caps.ukuranRekam(this, profil.tinggi)
+                profil = if (nilai == "manual") {
+                    profil.copy(
+                        bitManual = true,
+                        bitMbps = (profil.bitrateOtomatis(ukuran.x, ukuran.y) / 1_000_000)
+                            .coerceIn(2, 60)
+                    )
+                } else {
+                    profil.copy(bitManual = false)
+                }
+                true
+            }
 
             val ukuran = Caps.ukuranRekam(this, profil.tinggi)
+            val otomatis = profil.bitrateOtomatis(ukuran.x, ukuran.y)
             val bit = profil.bitrateVideo(ukuran.x, ukuran.y)
+
+            geserBit.visibility = if (profil.bitManual) View.VISIBLE else View.GONE
+            if (seekBit.progress != profil.bitMbps) seekBit.progress = profil.bitMbps
+            bitNilai.text = "${profil.bitMbps} Mbps"
+            bitSaran.text = "saran ${otomatis / 1_000_000} Mbps"
+
             estBit.text = Format.mbps(bit)
             estMenit.text = Format.mbPerMenit(bit, profil.bitrateAudio)
             estCodec.text = "H.264"
         }
+
+        seekBit.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar?, nilai: Int, dariPengguna: Boolean) {
+                if (!dariPengguna) return
+                profil = profil.copy(bitMbps = nilai.coerceIn(2, 60))
+                bitNilai.text = "${profil.bitMbps} Mbps"
+                val u = Caps.ukuranRekam(this@MainActivity, profil.tinggi)
+                val b = profil.bitrateVideo(u.x, u.y)
+                estBit.text = Format.mbps(b)
+                estMenit.text = Format.mbPerMenit(b, profil.bitrateAudio)
+            }
+
+            override fun onStartTrackingTouch(sb: SeekBar?) {}
+
+            override fun onStopTrackingTouch(sb: SeekBar?) {
+                Prefs.simpan(this@MainActivity, profil)
+                gambarProfil()
+            }
+        })
 
         // pasangGrup memakai callback ini untuk menggambar ulang setelah pilihan berubah
         gambarUlangLembar = { segarkan(); Prefs.simpan(this, profil); gambarProfil() }

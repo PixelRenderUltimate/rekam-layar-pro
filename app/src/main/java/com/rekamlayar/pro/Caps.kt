@@ -78,21 +78,41 @@ object Caps {
         }
     }
 
-    private fun bulat16(n: Int): Int = (n / 16) * 16
+    /** Kelipatan yang dituntut encoder. Hampir selalu 2, kadang 16 di chip lama. */
+    private fun kelipatanLebar(): Int = kemampuanVideo()?.widthAlignment ?: 2
+    private fun kelipatanTinggi(): Int = kemampuanVideo()?.heightAlignment ?: 2
+
+    private fun turunkanKe(n: Int, kelipatan: Int): Int {
+        val k = if (kelipatan < 1) 1 else kelipatan
+        return (n / k) * k
+    }
 
     /**
      * Ukuran rekaman dari sisi pendek yang diminta, mengikuti rasio layar.
-     * Hasilnya dibulatkan ke kelipatan 16 agar aman untuk encoder.
+     *
+     * Kalau targetnya sama dengan resolusi layar, ukuran layar dipakai apa
+     * adanya selama encoder menerimanya. Ini penting: menggeser ukuran sedikit
+     * saja memaksa sistem menskalakan ulang setiap frame, dan hasilnya teks
+     * jadi berbayang.
      */
     fun ukuranRekam(ctx: Context, sisiPendekTarget: Int): Point {
         val layar = ukuranLayar(ctx)
         val pendek = minOf(layar.x, layar.y)
+        val kw = kelipatanLebar()
+        val kh = kelipatanTinggi()
+
+        if (sisiPendekTarget >= pendek) {
+            return Point(
+                turunkanKe(layar.x, kw).coerceAtLeast(kw),
+                turunkanKe(layar.y, kh).coerceAtLeast(kh)
+            )
+        }
+
         val skala = sisiPendekTarget.toDouble() / pendek.toDouble()
-        var w = bulat16((layar.x * skala).toInt())
-        var h = bulat16((layar.y * skala).toInt())
-        if (w < 16) w = 16
-        if (h < 16) h = 16
-        return Point(w, h)
+        return Point(
+            turunkanKe((layar.x * skala).toInt(), kw).coerceAtLeast(kw),
+            turunkanKe((layar.y * skala).toInt(), kh).coerceAtLeast(kh)
+        )
     }
 
     /** Daftar alasan untuk pilihan yang harus dimatikan di lembar pengaturan. */

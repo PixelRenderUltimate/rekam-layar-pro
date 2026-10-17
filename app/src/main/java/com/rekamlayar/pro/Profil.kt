@@ -7,18 +7,26 @@ data class Profil(
     val fps: Int = 60,
     val tinggi: Int = 1080,          // sisi pendek target: 720 / 1080 / 1440
     val kualitas: String = "sedang", // rendah / sedang / tinggi
-    val audio: String = "perangkat"  // perangkat / mic / dua / bisu
+    val audio: String = "perangkat", // perangkat / mic / dua / bisu
+    val mengambang: Boolean = true,  // tampilkan kontrol mengambang saat merekam
+    val bitManual: Boolean = false,  // true = pakai angka bitrate sendiri
+    val bitMbps: Int = 17            // bitrate pilihan sendiri, dalam Mbps
 ) {
     /** Bit per piksel per frame. Dasar perhitungan bitrate. */
     private val bpp: Double
         get() = when (kualitas) {
-            "rendah" -> 0.048
-            "tinggi" -> 0.125
-            else -> 0.082
+            "rendah" -> 0.060
+            "tinggi" -> 0.165
+            else -> 0.110
         }
 
-    fun bitrateVideo(lebarPx: Int, tinggiPx: Int): Int =
+    /** Bitrate yang dihitung dari resolusi, fps, dan tingkat kualitas. */
+    fun bitrateOtomatis(lebarPx: Int, tinggiPx: Int): Int =
         (lebarPx.toDouble() * tinggiPx * fps * bpp).toInt().coerceAtLeast(1_000_000)
+
+    fun bitrateVideo(lebarPx: Int, tinggiPx: Int): Int =
+        if (bitManual) bitMbps.coerceIn(2, 60) * 1_000_000
+        else bitrateOtomatis(lebarPx, tinggiPx)
 
     val bitrateAudio: Int
         get() = when (audio) {
@@ -58,7 +66,10 @@ object Prefs {
             fps = p.getInt("fps", 60),
             tinggi = p.getInt("tinggi", 1080),
             kualitas = p.getString("kualitas", "sedang") ?: "sedang",
-            audio = p.getString("audio", "perangkat") ?: "perangkat"
+            audio = p.getString("audio", "perangkat") ?: "perangkat",
+            mengambang = p.getBoolean("mengambang", true),
+            bitManual = p.getBoolean("bitManual", false),
+            bitMbps = p.getInt("bitMbps", 17)
         )
     }
 
@@ -68,6 +79,9 @@ object Prefs {
             .putInt("tinggi", profil.tinggi)
             .putString("kualitas", profil.kualitas)
             .putString("audio", profil.audio)
+            .putBoolean("mengambang", profil.mengambang)
+            .putBoolean("bitManual", profil.bitManual)
+            .putInt("bitMbps", profil.bitMbps)
             .apply()
     }
 

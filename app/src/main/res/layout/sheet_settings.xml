@@ -65,6 +65,70 @@
             <TextView style="@style/Opsi" android:tag="bisu" android:text="Bisu" />
         </LinearLayout>
 
+        <TextView style="@style/Label" android:text="Bitrate video" />
+        <LinearLayout android:id="@+id/grupBit"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:layout_marginBottom="6dp">
+            <TextView style="@style/Opsi" android:tag="auto" android:text="Ikuti kualitas" />
+            <TextView style="@style/Opsi" android:tag="manual" android:text="Atur sendiri" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/geserBit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="18dp"
+            android:visibility="gone">
+
+            <SeekBar
+                android:id="@+id/seekBit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:min="2"
+                android:max="60"
+                android:progress="17" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/bitNilai"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/fg"
+                    android:textSize="11sp"
+                    android:fontFamily="monospace" />
+
+                <TextView
+                    android:id="@+id/bitSaran"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/muted"
+                    android:textSize="11sp"
+                    android:fontFamily="monospace" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView style="@style/Label" android:text="Kontrol mengambang" />
+        <LinearLayout android:id="@+id/grupMengambang"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:layout_marginBottom="6dp">
+            <TextView style="@style/Opsi" android:tag="ya" android:text="Aktif" />
+            <TextView style="@style/Opsi" android:tag="tidak" android:text="Mati" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="18dp"
+            android:text="Kalau dimatikan, hentikan rekaman dari dalam aplikasi atau dari notifikasi."
+            android:textColor="@color/muted"
+            android:textSize="12sp" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

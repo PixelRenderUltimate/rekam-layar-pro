@@ -15,4 +15,9 @@
     <string name="kosong">Belum ada rekaman. Pencet Mulai rekam untuk memulai.</string>
     <string name="hapus_semua">Hapus semua riwayat</string>
     <string name="saluran_rekam">Status rekaman</string>
+    <string name="berhenti">Berhenti</string>
+    <string name="jeda_singkat">Jeda</string>
+    <string name="lanjut_singkat">Lanjutkan</string>
+    <string name="sembunyikan">Sembunyikan kontrol mengambang</string>
+    <string name="tampilkan">Tampilkan kontrol mengambang</string>
 </resources>

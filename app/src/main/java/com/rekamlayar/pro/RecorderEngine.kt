@@ -99,15 +99,17 @@ class RecorderEngine(
         muxer = MediaMuxer(pfd!!.fileDescriptor, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
 
         // --- video ---
-        val fmt = MediaFormat.createVideoFormat(Caps.MIME_VIDEO, ukuranRekam.x, ukuranRekam.y).apply {
-            setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
-            setInteger(MediaFormat.KEY_BIT_RATE, profil.bitrateVideo(ukuranRekam.x, ukuranRekam.y))
-            setInteger(MediaFormat.KEY_FRAME_RATE, profil.fps)
-            setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
-            setInteger(MediaFormat.KEY_BITRATE_MODE, MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_VBR)
-        }
         val enc = MediaCodec.createEncoderByType(Caps.MIME_VIDEO)
-        enc.configure(fmt, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+        try {
+            // Profil High memberi CABAC dan transform 8x8. Untuk isi layar yang
+            // penuh teks dan garis tajam, bedanya besar sekali dibanding Baseline
+            // yang dipakai encoder kalau profilnya tidak disebutkan.
+            enc.configure(formatVideo(true), null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+        } catch (_: Exception) {
+            // Sebagian encoder menolak profil yang diminta. Ulangi tanpa itu.
+            try { enc.reset() } catch (_: Exception) {}
+            enc.configure(formatVideo(false), null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+        }
         inputSurface = enc.createInputSurface()
         enc.start()
         videoEnc = enc
@@ -135,6 +137,21 @@ class RecorderEngine(
             utasAudio = Thread({ putarAudio() }, "rl-audio").also { it.start() }
         }
     }
+
+    private fun formatVideo(pakaiProfilTinggi: Boolean): MediaFormat =
+        MediaFormat.createVideoFormat(Caps.MIME_VIDEO, ukuranRekam.x, ukuranRekam.y).apply {
+            setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
+            setInteger(MediaFormat.KEY_BIT_RATE, profil.bitrateVideo(ukuranRekam.x, ukuranRekam.y))
+            setInteger(MediaFormat.KEY_FRAME_RATE, profil.fps)
+            // Keyframe tiap 3 detik. Tiap 1 detik membuang bitrate yang
+            // seharusnya dipakai untuk detail, dan bikin encoder panas.
+            setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 3)
+            setInteger(MediaFormat.KEY_BITRATE_MODE, MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_VBR)
+            if (pakaiProfilTinggi) {
+                setInteger(MediaFormat.KEY_PROFILE, MediaCodecInfo.CodecProfileLevel.AVCProfileHigh)
+                setInteger(MediaFormat.KEY_LEVEL, MediaCodecInfo.CodecProfileLevel.AVCLevel42)
+            }
+        }
 
     private fun siapkanFileKeluaran() {
         val cap = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())

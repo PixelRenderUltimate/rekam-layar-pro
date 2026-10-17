@@ -20,7 +20,8 @@ import kotlin.math.abs
 class OverlayControl(
     private val ctx: Context,
     private val onJeda: () -> Unit,
-    private val onStop: () -> Unit
+    private val onStop: () -> Unit,
+    private val onSembunyi: () -> Unit
 ) {
 
     private val wm = ctx.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -32,6 +33,8 @@ class OverlayControl(
     private lateinit var tombolJeda: ImageView
 
     fun bisaTampil(): Boolean = Settings.canDrawOverlays(ctx)
+
+    fun sedangTampil(): Boolean = tampilan != null
 
     fun tampilkan() {
         if (tampilan != null || !bisaTampil()) return
@@ -54,7 +57,11 @@ class OverlayControl(
             WindowManager.LayoutParams.WRAP_CONTENT,
             tipe,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                // Window bertanda secure tidak ikut dikomposisikan ke virtual
+                // display biasa, jadi pil ini terlihat di mata tapi tidak
+                // muncul di hasil rekaman.
+                WindowManager.LayoutParams.FLAG_SECURE,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
@@ -82,6 +89,7 @@ class OverlayControl(
         var sentuhX = 0f
         var sentuhY = 0f
         var bergerak = false
+        var mulaiSentuh = 0L
 
         v.setOnTouchListener { _, e ->
             when (e.action) {
@@ -91,6 +99,7 @@ class OverlayControl(
                     sentuhX = e.rawX
                     sentuhY = e.rawY
                     bergerak = false
+                    mulaiSentuh = System.currentTimeMillis()
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
@@ -106,8 +115,15 @@ class OverlayControl(
                     true
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    if (bergerak) Prefs.simpanPosisiOverlay(ctx, lp.x, lp.y)
-                    bergerak
+                    if (bergerak) {
+                        Prefs.simpanPosisiOverlay(ctx, lp.x, lp.y)
+                    } else if (e.action == MotionEvent.ACTION_UP &&
+                        System.currentTimeMillis() - mulaiSentuh > 600
+                    ) {
+                        // tekan lama di badan pil: sembunyikan sementara
+                        onSembunyi()
+                    }
+                    true
                 }
                 else -> false
             }
