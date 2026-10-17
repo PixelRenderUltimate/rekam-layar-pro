@@ -1,0 +1,84 @@
+package com.rekamlayar.pro
+
+import android.content.Context
+
+/** Profil rekaman yang dipilih pengguna. */
+data class Profil(
+    val fps: Int = 60,
+    val tinggi: Int = 1080,          // sisi pendek target: 720 / 1080 / 1440
+    val kualitas: String = "sedang", // rendah / sedang / tinggi
+    val audio: String = "perangkat"  // perangkat / mic / dua / bisu
+) {
+    /** Bit per piksel per frame. Dasar perhitungan bitrate. */
+    private val bpp: Double
+        get() = when (kualitas) {
+            "rendah" -> 0.048
+            "tinggi" -> 0.125
+            else -> 0.082
+        }
+
+    fun bitrateVideo(lebarPx: Int, tinggiPx: Int): Int =
+        (lebarPx.toDouble() * tinggiPx * fps * bpp).toInt().coerceAtLeast(1_000_000)
+
+    val bitrateAudio: Int
+        get() = when (audio) {
+            "bisu" -> 0
+            "mic" -> 128_000
+            "dua" -> 256_000
+            else -> 192_000
+        }
+
+    val labelRes: String get() = if (tinggi == 1440) "2K" else "${tinggi}p"
+
+    val labelKualitas: String
+        get() = when (kualitas) {
+            "rendah" -> "Rendah"
+            "tinggi" -> "Tinggi"
+            else -> "Sedang"
+        }
+
+    val labelAudio: String
+        get() = when (audio) {
+            "mic" -> "Mikrofon"
+            "dua" -> "Perangkat + mikrofon"
+            "bisu" -> "Tanpa audio"
+            else -> "Suara perangkat"
+        }
+
+    val butuhMikrofon: Boolean get() = audio == "mic" || audio == "dua"
+    val butuhInternal: Boolean get() = audio == "perangkat" || audio == "dua"
+}
+
+object Prefs {
+    private const val NAMA = "rekam_layar_pro"
+
+    fun muat(c: Context): Profil {
+        val p = c.getSharedPreferences(NAMA, Context.MODE_PRIVATE)
+        return Profil(
+            fps = p.getInt("fps", 60),
+            tinggi = p.getInt("tinggi", 1080),
+            kualitas = p.getString("kualitas", "sedang") ?: "sedang",
+            audio = p.getString("audio", "perangkat") ?: "perangkat"
+        )
+    }
+
+    fun simpan(c: Context, profil: Profil) {
+        c.getSharedPreferences(NAMA, Context.MODE_PRIVATE).edit()
+            .putInt("fps", profil.fps)
+            .putInt("tinggi", profil.tinggi)
+            .putString("kualitas", profil.kualitas)
+            .putString("audio", profil.audio)
+            .apply()
+    }
+
+    fun simpanPosisiOverlay(c: Context, x: Int, y: Int) {
+        c.getSharedPreferences(NAMA, Context.MODE_PRIVATE).edit()
+            .putInt("ovx", x).putInt("ovy", y).apply()
+    }
+
+    fun posisiOverlay(c: Context): Pair<Int, Int>? {
+        val p = c.getSharedPreferences(NAMA, Context.MODE_PRIVATE)
+        if (!p.contains("ovx")) return null
+        return Pair(p.getInt("ovx", 0), p.getInt("ovy", 0))
+    }
+}

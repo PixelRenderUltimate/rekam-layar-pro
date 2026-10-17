@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/gelembung"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/bg_overlay"
+    android:paddingStart="13dp"
+    android:paddingEnd="7dp"
+    android:paddingVertical="7dp">
+
+    <View
+        android:id="@+id/gDot"
+        android:layout_width="7dp"
+        android:layout_height="7dp"
+        android:layout_marginEnd="7dp"
+        android:background="@drawable/bg_bulat_merah" />
+
+    <TextView
+        android:id="@+id/gJam"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="00:00"
+        android:textColor="@color/fg"
+        android:textSize="13sp"
+        android:fontFamily="monospace" />
+
+    <ImageView
+        android:id="@+id/gJeda"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:background="@drawable/bg_bulat_abu"
+        android:padding="10dp"
+        android:src="@drawable/ic_pause"
+        android:contentDescription="@string/jeda"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <ImageView
+        android:id="@+id/gStop"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginStart="6dp"
+        android:background="@drawable/bg_bulat_merah"
+        android:padding="10dp"
+        android:src="@drawable/ic_stop"
+        android:contentDescription="@string/hentikan"
+        android:clickable="true"
+        android:focusable="true" />
+</LinearLayout>
