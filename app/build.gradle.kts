@@ -11,7 +11,7 @@ android {
         applicationId = "com.rekamlayar.pro"
         minSdk = 29          // Android 10 — batas bawah untuk rekam suara internal
         targetSdk = 34
-        versionCode = 2
+        versionCode = 3
         versionName = "1.3"
     }
 
