@@ -117,15 +117,16 @@
         <LinearLayout android:id="@+id/grupMengambang"
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="horizontal" android:layout_marginBottom="6dp">
-            <TextView style="@style/Opsi" android:tag="ya" android:text="Aktif" />
-            <TextView style="@style/Opsi" android:tag="tidak" android:text="Mati" />
+            <TextView style="@style/Opsi" android:tag="samar" android:text="Tak terekam" />
+            <TextView style="@style/Opsi" android:tag="biasa" android:text="Biasa" />
+            <TextView style="@style/Opsi" android:tag="mati" android:text="Mati" />
         </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="18dp"
-            android:text="Kalau dimatikan, hentikan rekaman dari dalam aplikasi atau dari notifikasi."
+            android:text="Tak terekam: pil terlihat olehmu tapi tidak masuk ke video. Kalau di HP ini malah jadi kotak hitam, pilih Mati dan hentikan rekaman dari dalam aplikasi."
             android:textColor="@color/muted"
             android:textSize="12sp" />
 

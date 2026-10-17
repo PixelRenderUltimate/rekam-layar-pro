@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_lembar">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="22dp">
+
+        <View
+            android:layout_width="36dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="14dp"
+            android:background="@color/line" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="@string/pengaturan"
+            android:textColor="@color/fg"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <TextView style="@style/Label" android:text="Frame rate" />
+        <LinearLayout android:id="@+id/grupFps"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:layout_marginBottom="16dp">
+            <TextView style="@style/Opsi" android:tag="30" android:text="30 fps" />
+            <TextView style="@style/Opsi" android:tag="60" android:text="60 fps" />
+            <TextView style="@style/Opsi" android:tag="120" android:text="120 fps" />
+        </LinearLayout>
+
+        <TextView style="@style/Label" android:text="Resolusi" />
+        <LinearLayout android:id="@+id/grupRes"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:layout_marginBottom="16dp">
+            <TextView style="@style/Opsi" android:tag="720" android:text="720p" />
+            <TextView style="@style/Opsi" android:tag="1080" android:text="1080p" />
+            <TextView style="@style/Opsi" android:tag="1440" android:text="2K" />
+        </LinearLayout>
+
+        <TextView style="@style/Label" android:text="Kualitas" />
+        <LinearLayout android:id="@+id/grupQ"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:layout_marginBottom="16dp">
+            <TextView style="@style/Opsi" android:tag="rendah" android:text="Rendah" />
+            <TextView style="@style/Opsi" android:tag="sedang" android:text="Sedang" />
+            <TextView style="@style/Opsi" android:tag="tinggi" android:text="Tinggi" />
+        </LinearLayout>
+
+        <TextView style="@style/Label" android:text="Sumber audio" />
+        <LinearLayout android:id="@+id/grupAudio"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:layout_marginBottom="18dp">
+            <TextView style="@style/Opsi" android:tag="perangkat" android:text="Perangkat" />
+            <TextView style="@style/Opsi" android:tag="mic" android:text="Mikrofon" />
+            <TextView style="@style/Opsi" android:tag="dua" android:text="Keduanya" />
+            <TextView style="@style/Opsi" android:tag="bisu" android:text="Bisu" />
+        </LinearLayout>
+
+        <TextView style="@style/Label" android:text="Bitrate video" />
+        <LinearLayout android:id="@+id/grupBit"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:layout_marginBottom="6dp">
+            <TextView style="@style/Opsi" android:tag="auto" android:text="Ikuti kualitas" />
+            <TextView style="@style/Opsi" android:tag="manual" android:text="Atur sendiri" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/geserBit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="18dp"
+            android:visibility="gone">
+
+            <SeekBar
+                android:id="@+id/seekBit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:min="2"
+                android:max="60"
+                android:progress="17" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/bitNilai"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/fg"
+                    android:textSize="11sp"
+                    android:fontFamily="monospace" />
+
+                <TextView
+                    android:id="@+id/bitSaran"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/muted"
+                    android:textSize="11sp"
+                    android:fontFamily="monospace" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView style="@style/Label" android:text="Kontrol mengambang" />
+        <LinearLayout android:id="@+id/grupMengambang"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:layout_marginBottom="6dp">
+            <TextView style="@style/Opsi" android:tag="samar" android:text="Tak terekam" />
+            <TextView style="@style/Opsi" android:tag="biasa" android:text="Biasa" />
+            <TextView style="@style/Opsi" android:tag="mati" android:text="Mati" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="18dp"
+            android:text="Tak terekam: pil terlihat olehmu tapi tidak masuk ke video. Kalau di HP ini malah jadi kotak hitam, pilih Mati dan hentikan rekaman dari dalam aplikasi."
+            android:textColor="@color/muted"
+            android:textSize="12sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="18dp">
+
+            <LinearLayout style="@style/Kotak">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="BITRATE" android:textColor="@color/muted" android:textSize="9sp"
+                    android:fontFamily="monospace" android:letterSpacing="0.08" />
+                <TextView android:id="@+id/estBit" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:textColor="@color/fg"
+                    android:textSize="18sp" android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Kotak">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="PER MENIT" android:textColor="@color/muted" android:textSize="9sp"
+                    android:fontFamily="monospace" android:letterSpacing="0.08" />
+                <TextView android:id="@+id/estMenit" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:textColor="@color/fg"
+                    android:textSize="18sp" android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Kotak" android:layout_marginEnd="0dp">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="CODEC" android:textColor="@color/muted" android:textSize="9sp"
+                    android:fontFamily="monospace" android:letterSpacing="0.08" />
+                <TextView android:id="@+id/estCodec" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:textColor="@color/fg"
+                    android:textSize="15sp" android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tutupLembar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_opsi_mati"
+            android:gravity="center"
+            android:padding="13dp"
+            android:text="@string/selesai"
+            android:textColor="@color/fg"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:focusable="true" />
+    </LinearLayout>
+</ScrollView>

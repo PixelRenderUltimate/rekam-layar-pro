@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Logo Rekam Layar Pro">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#16222d"/>
+      <stop offset="1" stop-color="#070c11"/>
+    </linearGradient>
+    <radialGradient id="cahaya" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ff4b3e" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#ff4b3e" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="114" fill="url(#tile)"/>
+  <circle cx="256" cy="256" r="150" fill="url(#cahaya)"/>
+
+  <g fill="none" stroke="#ffb020" stroke-width="26" stroke-linecap="round">
+    <path d="M128 182v-28a26 26 0 0 1 26-26h28"/>
+    <path d="M384 182v-28a26 26 0 0 0-26-26h-28"/>
+    <path d="M128 330v28a26 26 0 0 0 26 26h28"/>
+    <path d="M384 330v28a26 26 0 0 1-26 26h-28"/>
+  </g>
+
+  <circle cx="256" cy="256" r="62" fill="#ff4b3e"/>
+</svg>

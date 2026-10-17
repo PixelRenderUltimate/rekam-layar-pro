@@ -159,7 +159,8 @@ class RecorderService : Service() {
                     if (engine?.dijeda == true) kirim(this, AKSI_LANJUT) else kirim(this, AKSI_JEDA)
                 },
                 onStop = { kirim(this, AKSI_STOP) },
-                onSembunyi = { kirim(this, AKSI_SEMBUNYI) }
+                onSembunyi = { kirim(this, AKSI_SEMBUNYI) },
+                samar = profil.mengambangSamar
             ).also { it.tampilkan() }
             mengambangTampil = overlay?.sedangTampil() ?: false
         }

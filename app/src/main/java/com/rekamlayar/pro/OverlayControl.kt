@@ -21,7 +21,8 @@ class OverlayControl(
     private val ctx: Context,
     private val onJeda: () -> Unit,
     private val onStop: () -> Unit,
-    private val onSembunyi: () -> Unit
+    private val onSembunyi: () -> Unit,
+    private val samar: Boolean
 ) {
 
     private val wm = ctx.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -59,9 +60,10 @@ class OverlayControl(
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
                 // Window bertanda secure tidak ikut dikomposisikan ke virtual
-                // display biasa, jadi pil ini terlihat di mata tapi tidak
-                // muncul di hasil rekaman.
-                WindowManager.LayoutParams.FLAG_SECURE,
+                // display biasa. Di sebagian besar HP pil ini jadi hilang dari
+                // rekaman; di sebagian ROM ia malah jadi kotak hitam, jadi
+                // perilakunya bisa dimatikan dari pengaturan.
+                (if (samar) WindowManager.LayoutParams.FLAG_SECURE else 0),
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START

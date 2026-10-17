@@ -1,0 +1,22 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+
+    <!-- siku jendela bidik -->
+    <path android:strokeColor="#FFB020" android:strokeWidth="5.5"
+        android:strokeLineCap="round" android:fillColor="#00000000"
+        android:pathData="M38,30 h-6 a5,5 0 0 0 -5,5 v6" />
+    <path android:strokeColor="#FFB020" android:strokeWidth="5.5"
+        android:strokeLineCap="round" android:fillColor="#00000000"
+        android:pathData="M70,30 h6 a5,5 0 0 1 5,5 v6" />
+    <path android:strokeColor="#FFB020" android:strokeWidth="5.5"
+        android:strokeLineCap="round" android:fillColor="#00000000"
+        android:pathData="M38,78 h-6 a5,5 0 0 1 -5,-5 v-6" />
+    <path android:strokeColor="#FFB020" android:strokeWidth="5.5"
+        android:strokeLineCap="round" android:fillColor="#00000000"
+        android:pathData="M70,78 h6 a5,5 0 0 0 5,-5 v-6" />
+
+    <!-- titik rekam -->
+    <path android:fillColor="#FF4B3E"
+        android:pathData="M54,54 m-13,0 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0" />
+</vector>

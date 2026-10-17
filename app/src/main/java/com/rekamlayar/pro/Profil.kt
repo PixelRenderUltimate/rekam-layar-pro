@@ -8,7 +8,10 @@ data class Profil(
     val tinggi: Int = 1080,          // sisi pendek target: 720 / 1080 / 1440
     val kualitas: String = "sedang", // rendah / sedang / tinggi
     val audio: String = "perangkat", // perangkat / mic / dua / bisu
-    val mengambang: Boolean = true,  // tampilkan kontrol mengambang saat merekam
+    // "samar" = tampil tapi ditandai secure supaya tidak ikut terekam
+    // "biasa" = tampil apa adanya, ikut terekam
+    // "mati"  = tidak ditampilkan sama sekali
+    val mengambangMode: String = "samar",
     val bitManual: Boolean = false,  // true = pakai angka bitrate sendiri
     val bitMbps: Int = 17            // bitrate pilihan sendiri, dalam Mbps
 ) {
@@ -53,6 +56,9 @@ data class Profil(
             else -> "Suara perangkat"
         }
 
+    val mengambang: Boolean get() = mengambangMode != "mati"
+    val mengambangSamar: Boolean get() = mengambangMode == "samar"
+
     val butuhMikrofon: Boolean get() = audio == "mic" || audio == "dua"
     val butuhInternal: Boolean get() = audio == "perangkat" || audio == "dua"
 }
@@ -67,7 +73,8 @@ object Prefs {
             tinggi = p.getInt("tinggi", 1080),
             kualitas = p.getString("kualitas", "sedang") ?: "sedang",
             audio = p.getString("audio", "perangkat") ?: "perangkat",
-            mengambang = p.getBoolean("mengambang", true),
+            mengambangMode = p.getString("mengambangMode", null)
+                ?: if (p.getBoolean("mengambang", true)) "samar" else "mati",
             bitManual = p.getBoolean("bitManual", false),
             bitMbps = p.getInt("bitMbps", 17)
         )
@@ -79,7 +86,7 @@ object Prefs {
             .putInt("tinggi", profil.tinggi)
             .putString("kualitas", profil.kualitas)
             .putString("audio", profil.audio)
-            .putBoolean("mengambang", profil.mengambang)
+            .putString("mengambangMode", profil.mengambangMode)
             .putBoolean("bitManual", profil.bitManual)
             .putInt("bitMbps", profil.bitMbps)
             .apply()

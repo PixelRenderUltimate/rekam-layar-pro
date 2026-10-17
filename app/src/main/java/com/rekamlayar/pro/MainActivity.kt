@@ -363,10 +363,8 @@ class MainActivity : AppCompatActivity() {
             pasangGrup(grupAudio, profil.audio, mati, "audio") { nilai ->
                 profil = profil.copy(audio = nilai); true
             }
-            pasangGrup(
-                grupMengambang, if (profil.mengambang) "ya" else "tidak", mati, "float"
-            ) { nilai ->
-                profil = profil.copy(mengambang = nilai == "ya"); true
+            pasangGrup(grupMengambang, profil.mengambangMode, mati, "float") { nilai ->
+                profil = profil.copy(mengambangMode = nilai); true
             }
 
             pasangGrup(

@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Rekam Layar Pro</string>
+    <string name="siap">Siap merekam</string>
+    <string name="merekam">Merekam</string>
+    <string name="dijeda">Dijeda</string>
+    <string name="mulai_rekam">Mulai rekam</string>
+    <string name="ubah">Ubah ›</string>
+    <string name="riwayat">Riwayat rekaman</string>
+    <string name="pengaturan">Pengaturan rekaman</string>
+    <string name="selesai">Selesai</string>
+    <string name="jeda">Jeda rekaman</string>
+    <string name="lanjutkan">Lanjutkan rekaman</string>
+    <string name="hentikan">Hentikan rekaman</string>
+    <string name="hapus">Hapus rekaman</string>
+    <string name="kosong">Belum ada rekaman. Pencet Mulai rekam untuk memulai.</string>
+    <string name="hapus_semua">Hapus semua riwayat</string>
+    <string name="saluran_rekam">Status rekaman</string>
+    <string name="berhenti">Berhenti</string>
+    <string name="jeda_singkat">Jeda</string>
+    <string name="lanjut_singkat">Lanjutkan</string>
+    <string name="sembunyikan">Sembunyikan kontrol mengambang</string>
+    <string name="tampilkan">Tampilkan kontrol mengambang</string>
+</resources>

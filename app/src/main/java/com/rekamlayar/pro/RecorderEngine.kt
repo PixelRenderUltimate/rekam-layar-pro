@@ -146,6 +146,15 @@ class RecorderEngine(
             // Keyframe tiap 3 detik. Tiap 1 detik membuang bitrate yang
             // seharusnya dipakai untuk detail, dan bikin encoder panas.
             setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 3)
+            // VirtualDisplay hanya mengirim frame saat isi layar berubah. Tanpa
+            // baris ini, layar yang diam beberapa detik tidak menghasilkan frame
+            // sama sekali, dan pemutar video menampilkannya sebagai gambar macet
+            // lalu melompat. Frame terakhir diulang supaya garis waktunya rapat;
+            // frame kembar sangat murah bagi encoder.
+            setLong(
+                MediaFormat.KEY_REPEAT_PREVIOUS_FRAME_AFTER,
+                (1_000_000L / profil.fps).coerceAtLeast(8_000L)
+            )
             setInteger(MediaFormat.KEY_BITRATE_MODE, MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_VBR)
             if (pakaiProfilTinggi) {
                 setInteger(MediaFormat.KEY_PROFILE, MediaCodecInfo.CodecProfileLevel.AVCProfileHigh)
